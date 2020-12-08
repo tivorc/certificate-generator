@@ -1,5 +1,8 @@
 import { jsPDF } from "jspdf";
 import XLSX from "xlsx";
+import logo from "../images/logo_no_shadow.png";
+import text from "../images/text_no_shadow.png";
+import ugel from "../images/ugel_logo.jpg";
 
 (function (API) {
   API.myText = function (txt, options, x, y) {
@@ -76,9 +79,6 @@ import XLSX from "xlsx";
 
 const btn = document.getElementById("btn");
 const file = document.getElementById("file");
-const logo = document.getElementById("logo");
-const text = document.getElementById("plevands");
-const ugelLogo = document.getElementById("ugel-logo");
 
 btn.addEventListener("click", handleClick);
 
@@ -86,7 +86,7 @@ async function handleClick() {
   try {
     const xlsxFile = await readFileAsync(file.files[0]);
     const dataList = readExcel(xlsxFile);
-    const doc = makePDF(dataList);
+    const doc = await makePDF(dataList);
     doc.save("certificados.pdf");
   } catch (error) {
     alert(error.message);
@@ -141,8 +141,7 @@ function readExcel(xlsxFile) {
   return dataList;
 }
 
-function makePDF(data) {
-  // Default export is a4 paper, portrait, using millimeters for units
+async function makePDF(data) {
   const doc = new jsPDF({
     orientation: "landscape",
   });
@@ -152,6 +151,12 @@ function makePDF(data) {
     margin = 10;
   const gold = [250, 174, 0],
     wine = [158, 25, 21];
+
+  const [schoolLogo, schoolText, ugelLogo] = await Promise.all([
+    getDataUri(logo),
+    getDataUri(text),
+    getDataUri(ugel),
+  ]);
 
   data.forEach((students, i) => {
     const { type, student: name, description, date } = students;
@@ -169,9 +174,9 @@ function makePDF(data) {
     doc.setTextColor("gray");
 
     // images
-    doc.addImage(logo, "png", 30, 10, 17, 20);
-    doc.addImage(text, "png", width / 2 - 27, 17, 54, 11);
-    doc.addImage(ugelLogo, "png", width - 30 - 25, margin, 25, 19);
+    doc.addImage(schoolLogo, "png", 30, 10, 17, 20, "XD", "FAST");
+    doc.addImage(schoolText, "png", width / 2 - 27, 17, 54, 11);
+    doc.addImage(ugelLogo, "jpg", width - 30 - 25, margin, 25, 19);
 
     // institution name
     doc.setFontSize(14);
@@ -213,4 +218,28 @@ function makePDF(data) {
   });
 
   return doc;
+}
+
+function getDataUri(url) {
+  return new Promise((resolve) => {
+    var image = new Image();
+    image.setAttribute("crossOrigin", "anonymous"); //getting images from external domain
+
+    image.onload = function () {
+      var canvas = document.createElement("canvas");
+      canvas.width = this.naturalWidth;
+      canvas.height = this.naturalHeight;
+
+      //next three lines for white background in case png has a transparent background
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff"; /// set white fill style
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      canvas.getContext("2d").drawImage(this, 0, 0);
+
+      resolve(canvas.toDataURL("image/jpeg"));
+    };
+
+    image.src = url;
+  });
 }

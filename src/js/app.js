@@ -4,79 +4,6 @@ import logo from "../images/logo_no_shadow.png";
 import text from "../images/text_no_shadow.png";
 import ugel from "../images/ugel_logo.jpg";
 
-(function (API) {
-  API.myText = function (txt, options, x, y) {
-    options = options || {};
-    /* Use the options align property to specify desired text alignment
-     * Param x will be ignored if desired text alignment is 'center'.
-     * Usage of options can easily extend the function to apply different text
-     * styles and sizes
-     */
-    if (options.align == "center") {
-      // Get current font size
-      var fontSize = this.internal.getFontSize();
-
-      // Get page width
-      var pageWidth = this.internal.pageSize.width;
-
-      // Get the actual text's width
-      /* You multiply the unit width of your string by your font size and divide
-       * by the internal scale factor. The division is necessary
-       * for the case where you use units other than 'pt' in the constructor
-       * of jsPDF.
-       */
-      const txtWidth =
-        (this.getStringUnitWidth(txt) * fontSize) / this.internal.scaleFactor;
-
-      // Calculate text's x coordinate
-      x = (pageWidth - txtWidth) / 2;
-    }
-
-    if (options.align == "center2") {
-      // Get current font size
-      var fontSize = this.internal.getFontSize();
-
-      // Get page width
-      var pageWidth = this.internal.pageSize.width;
-
-      // Get the actual text's width
-      /* You multiply the unit width of your string by your font size and divide
-       * by the internal scale factor. The division is necessary
-       * for the case where you use units other than 'pt' in the constructor
-       * of jsPDF.
-       */
-      const txtWidth =
-        (this.getStringUnitWidth(txt) * fontSize) / this.internal.scaleFactor;
-
-      // Calculate text's x coordinate
-      x = pageWidth / 4 - txtWidth / 2;
-    }
-
-    if (options.align == "center3") {
-      // Get current font size
-      var fontSize = this.internal.getFontSize();
-
-      // Get page width
-      var pageWidth = this.internal.pageSize.width;
-
-      // Get the actual text's width
-      /* You multiply the unit width of your string by your font size and divide
-       * by the internal scale factor. The division is necessary
-       * for the case where you use units other than 'pt' in the constructor
-       * of jsPDF.
-       */
-      const txtWidth =
-        (this.getStringUnitWidth(txt) * fontSize) / this.internal.scaleFactor;
-
-      // Calculate text's x coordinate
-      x = pageWidth - pageWidth / 4 - txtWidth / 2;
-    }
-
-    // Draw text at x,y
-    this.text(txt, x, y);
-  };
-})(jsPDF.API);
-
 const btn = document.getElementById("btn");
 const file = document.getElementById("file");
 
@@ -223,16 +150,15 @@ async function makePDF(data) {
 function getDataUri(url) {
   return new Promise((resolve) => {
     var image = new Image();
-    image.setAttribute("crossOrigin", "anonymous"); //getting images from external domain
+    image.setAttribute("crossOrigin", "anonymous");
 
     image.onload = function () {
       var canvas = document.createElement("canvas");
       canvas.width = this.naturalWidth;
       canvas.height = this.naturalHeight;
 
-      //next three lines for white background in case png has a transparent background
       var ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#fff"; /// set white fill style
+      ctx.fillStyle = "#fff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       canvas.getContext("2d").drawImage(this, 0, 0);
@@ -243,3 +169,42 @@ function getDataUri(url) {
     image.src = url;
   });
 }
+
+// center text
+(function (API) {
+  API.myText = function (txt, options, x, y) {
+    options = options || {};
+
+    if (options.align == "center") {
+      var fontSize = this.internal.getFontSize();
+      var pageWidth = this.internal.pageSize.width;
+
+      const txtWidth =
+        (this.getStringUnitWidth(txt) * fontSize) / this.internal.scaleFactor;
+
+      x = (pageWidth - txtWidth) / 2;
+    }
+
+    if (options.align == "center2") {
+      var fontSize = this.internal.getFontSize();
+      var pageWidth = this.internal.pageSize.width;
+
+      const txtWidth =
+        (this.getStringUnitWidth(txt) * fontSize) / this.internal.scaleFactor;
+
+      x = pageWidth / 4 - txtWidth / 2;
+    }
+
+    if (options.align == "center3") {
+      var fontSize = this.internal.getFontSize();
+      var pageWidth = this.internal.pageSize.width;
+
+      const txtWidth =
+        (this.getStringUnitWidth(txt) * fontSize) / this.internal.scaleFactor;
+
+      x = pageWidth - pageWidth / 4 - txtWidth / 2;
+    }
+
+    this.text(txt, x, y);
+  };
+})(jsPDF.API);
